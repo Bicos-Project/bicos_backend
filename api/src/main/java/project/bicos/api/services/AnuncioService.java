@@ -24,34 +24,26 @@ public class AnuncioService {
     private final PrestadorRepository prestadorRepository;
     private final CategoriaService categoriaService;
 
-    // ---------------------------------------------------------------
-    // CRIAR ANÚNCIO
-    // ---------------------------------------------------------------
     @Transactional
     public AnuncioResponseDTO criar(AnuncioRequestDTO dto) {
 
-        // Valida e busca o prestador
         Prestador prestador = prestadorRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new RegraNegocioException(
                         "Prestador não encontrado com ID: " + dto.getPrestadorId()));
 
-        // Valida e busca a categoria (reutiliza método do CategoriaService)
         Categoria categoria = categoriaService.buscarEntidadePorId(dto.getCategoriaId());
 
         Anuncio anuncio = new Anuncio();
         anuncio.setTitulo(dto.getTitulo());
         anuncio.setDescricao(dto.getDescricao());
         anuncio.setValorBase(dto.getValorBase());
-        anuncio.setStatus(StatusAnuncio.ativo); // todo anúncio começa ativo
+        anuncio.setStatus(StatusAnuncio.ativo);
         anuncio.setPrestador(prestador);
         anuncio.setCategoria(categoria);
 
         return toResponseDTO(anuncioRepository.save(anuncio));
     }
 
-    // ---------------------------------------------------------------
-    // LISTAR TODOS OS ATIVOS — home do cliente
-    // ---------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<AnuncioResponseDTO> listarAtivos() {
         return anuncioRepository.findByStatus(StatusAnuncio.ativo)
@@ -60,9 +52,6 @@ public class AnuncioService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------------------
-    // LISTAR POR CATEGORIA — quando cliente clica numa categoria
-    // ---------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<AnuncioResponseDTO> listarPorCategoria(Integer categoriaId) {
         return anuncioRepository
@@ -72,9 +61,6 @@ public class AnuncioService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------------------
-    // LISTAR POR PRESTADOR — painel do prestador
-    // ---------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<AnuncioResponseDTO> listarPorPrestador(Integer prestadorId) {
         return anuncioRepository.findByPrestadorId(prestadorId)
@@ -83,9 +69,6 @@ public class AnuncioService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------------------
-    // BUSCAR POR ID
-    // ---------------------------------------------------------------
     @Transactional(readOnly = true)
     public AnuncioResponseDTO buscarPorId(Integer id) {
         return anuncioRepository.findById(id)
@@ -94,9 +77,6 @@ public class AnuncioService {
                         "Anúncio não encontrado com ID: " + id));
     }
 
-    // ---------------------------------------------------------------
-    // ATUALIZAR
-    // ---------------------------------------------------------------
     @Transactional
     public AnuncioResponseDTO atualizar(Integer id, AnuncioRequestDTO dto) {
         Anuncio anuncio = anuncioRepository.findById(id)
@@ -110,20 +90,15 @@ public class AnuncioService {
         anuncio.setValorBase(dto.getValorBase());
         anuncio.setCategoria(categoria);
 
-        // Dirty checking cuida do UPDATE automaticamente
         return toResponseDTO(anuncio);
     }
 
-    // ---------------------------------------------------------------
-    // DESATIVAR — soft delete: não apaga, só muda status
-    // ---------------------------------------------------------------
     @Transactional
     public AnuncioResponseDTO desativar(Integer id) {
         Anuncio anuncio = anuncioRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException(
                         "Anúncio não encontrado com ID: " + id));
 
-        // Regra: só desativa se estiver ativo
         if (anuncio.getStatus() == StatusAnuncio.inativo) {
             throw new RegraNegocioException("Anúncio já está inativo.");
         }
@@ -132,9 +107,6 @@ public class AnuncioService {
         return toResponseDTO(anuncio);
     }
 
-    // ---------------------------------------------------------------
-    // CONVERTER Entity → DTO
-    // ---------------------------------------------------------------
     private AnuncioResponseDTO toResponseDTO(Anuncio a) {
         CategoriaResponseDTO categoriaDTO = new CategoriaResponseDTO(
                 a.getCategoria().getId(),

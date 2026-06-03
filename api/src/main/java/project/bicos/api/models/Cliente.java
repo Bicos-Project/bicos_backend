@@ -27,8 +27,6 @@ public class Cliente {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
-    // Nunca exposto em DTOs de resposta.
-    // O Service recebe a senha limpa e armazena aqui somente o hash BCrypt.
     @Column(name = "senha_hash", nullable = false, length = 255)
     private String senhaHash;
 
@@ -38,8 +36,6 @@ public class Cliente {
     @Column(name = "cpf", unique = true, length = 14)
     private String cpf;
 
-    // cascade = ALL  → ao salvar o Cliente, o Endereco é persistido junto
-    // orphanRemoval  → se o endereco for desassociado, é removido do banco
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;

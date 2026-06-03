@@ -14,12 +14,9 @@ public class SolicitacaoResponseDTO {
     private LocalDate dataSolicitacao;
     private String status;
 
-    // Dados do cliente
     private Integer clienteId;
     private String clienteNome;
 
-    // Dados do anúncio e do prestador
-    // O Flutter precisa dessas infos para montar o card da orcamento_page
     private Integer anuncioId;
     private String anuncioTitulo;
     private Integer prestadorId;

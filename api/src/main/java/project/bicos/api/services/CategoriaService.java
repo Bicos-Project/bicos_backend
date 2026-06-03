@@ -20,7 +20,6 @@ public class CategoriaService {
     @Transactional
     public CategoriaResponseDTO criar(CategoriaRequestDTO dto) {
 
-        // Categoria é um dado de configuração — não pode ter duplicata
         if (categoriaRepository.existsByNome(dto.getNome())) {
             throw new RegraNegocioException("Já existe uma categoria com esse nome.");
         }
@@ -48,8 +47,6 @@ public class CategoriaService {
                         "Categoria não encontrada com ID: " + id));
     }
 
-    // Método package-private: usado pelo AnuncioService para validar
-    // se a categoria existe sem precisar passar pelo DTO
     Categoria buscarEntidadePorId(Integer id) {
         return categoriaRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException(

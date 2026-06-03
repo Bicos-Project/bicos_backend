@@ -22,10 +22,6 @@ public class PrestadorService {
     private final PrestadorRepository prestadorRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // -------------------------------------------------------------------------
-    // CADASTRO
-    // -------------------------------------------------------------------------
-
     @Transactional
     public PrestadorResponseDTO cadastrar(PrestadorCadastroRequestDTO dto) {
 
@@ -54,17 +50,11 @@ public class PrestadorService {
         prestador.setDescricao(dto.getDescricao());
         prestador.setEndereco(endereco);
 
-        // Substituir por BCrypt em produção:
-        // prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
         prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
 
         Prestador salvo = prestadorRepository.save(prestador);
         return toResponseDTO(salvo);
     }
-
-    // -------------------------------------------------------------------------
-    // BUSCA POR ID
-    // -------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
     public PrestadorResponseDTO buscarPorId(Integer id) {
@@ -73,10 +63,6 @@ public class PrestadorService {
         return toResponseDTO(prestador);
     }
 
-    // -------------------------------------------------------------------------
-    // LISTAR TODOS
-    // -------------------------------------------------------------------------
-
     @Transactional(readOnly = true)
     public List<PrestadorResponseDTO> listarTodos() {
         return prestadorRepository.findAll()
@@ -84,10 +70,6 @@ public class PrestadorService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-
-    // -------------------------------------------------------------------------
-    // ATUALIZAR
-    // -------------------------------------------------------------------------
 
     @Transactional
     public PrestadorResponseDTO atualizar(Integer id, PrestadorCadastroRequestDTO dto) {
@@ -121,10 +103,6 @@ public class PrestadorService {
         return toResponseDTO(prestador);
     }
 
-    // -------------------------------------------------------------------------
-    // DELETAR
-    // -------------------------------------------------------------------------
-
     @Transactional
     public void deletar(Integer id) {
         if (!prestadorRepository.existsById(id)) {
@@ -132,10 +110,6 @@ public class PrestadorService {
         }
         prestadorRepository.deleteById(id);
     }
-
-    // -------------------------------------------------------------------------
-    // MÉTODO AUXILIAR PRIVADO: Entity → ResponseDTO
-    // -------------------------------------------------------------------------
 
     private PrestadorResponseDTO toResponseDTO(Prestador prestador) {
         EnderecoResponseDTO enderecoDTO = null;

@@ -26,8 +26,6 @@ public class Solicitacao {
     @Column(name = "descricao", length = 500)
     private String descricao;
 
-    // LocalDate = apenas data (sem hora) — espelha o tipo DATE do PostgreSQL
-    // LocalDateTime seria para data + hora — não é o caso aqui
     @Column(name = "data_solicitacao")
     private LocalDate dataSolicitacao;
 
@@ -35,8 +33,6 @@ public class Solicitacao {
     @Column(name = "status", nullable = false, length = 30)
     private StatusSolicitacao status;
 
-    // Relacionamentos sem cascade — cliente e anúncio existem
-    // independentemente da solicitação
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;

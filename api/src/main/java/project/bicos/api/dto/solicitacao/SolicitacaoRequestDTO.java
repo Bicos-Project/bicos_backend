@@ -14,7 +14,6 @@ public class SolicitacaoRequestDTO {
     @Size(max = 500, message = "Descrição deve ter no máximo 500 caracteres")
     private String descricao;
 
-    // Data escolhida pelo cliente na tela de solicitação
     private LocalDate dataSolicitacao;
 
     @NotNull(message = "ID do cliente é obrigatório")

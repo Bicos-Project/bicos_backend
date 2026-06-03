@@ -15,8 +15,6 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Intege
 
     List<Solicitacao> findByAnuncioId(Integer anuncioId);
 
-    // Usado na regra de negócio: cliente não pode ter duas solicitações
-    // abertas para o mesmo anúncio
     boolean existsByClienteIdAndAnuncioIdAndStatusNot(
             Integer clienteId,
             Integer anuncioId,

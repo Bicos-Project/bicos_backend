@@ -23,22 +23,12 @@ public class AvaliacaoService {
     private final SolicitacaoService solicitacaoService;
     private final PrestadorRepository prestadorRepository;
 
-    // -----------------------------------------------------------
-    // CRIAR AVALIAÇÃO
-    // Regras:
-    //   1. Solicitação deve existir
-    //   2. Solicitação deve estar FINALIZADA
-    //   3. Solicitação não pode já ter avaliação
-    // -----------------------------------------------------------
     @Transactional
     public AvaliacaoResponseDTO criar(AvaliacaoRequestDTO dto) {
 
-        // Busca a solicitação (reutiliza método do SolicitacaoService)
         Solicitacao solicitacao = solicitacaoService
                 .buscarEntidadePorId(dto.getSolicitacaoId());
 
-        // Regra 1: só avalia serviço finalizado
-        // Sem essa regra, o cliente poderia avaliar antes de receber o serviço
         if (solicitacao.getStatus() != StatusSolicitacao.finalizado) {
             throw new RegraNegocioException(
                     "Só é possível avaliar solicitações finalizadas. " +
@@ -46,9 +36,6 @@ public class AvaliacaoService {
             );
         }
 
-        // Regra 2: cada solicitação só pode ter uma avaliação
-        // Verificamos antes de tentar salvar para dar mensagem clara
-        // (sem isso, o banco lançaria uma exceção genérica de UNIQUE violation)
         if (avaliacaoRepository.existsBySolicitacaoId(dto.getSolicitacaoId())) {
             throw new RegraNegocioException(
                     "Essa solicitação já possui uma avaliação."
@@ -63,9 +50,6 @@ public class AvaliacaoService {
         return toResponseDTO(avaliacaoRepository.save(avaliacao));
     }
 
-    // -----------------------------------------------------------
-    // BUSCAR POR ID
-    // -----------------------------------------------------------
     @Transactional(readOnly = true)
     public AvaliacaoResponseDTO buscarPorId(Integer id) {
         return avaliacaoRepository.findById(id)
@@ -74,10 +58,6 @@ public class AvaliacaoService {
                         "Avaliação não encontrada com ID: " + id));
     }
 
-    // -----------------------------------------------------------
-    // BUSCAR POR SOLICITAÇÃO
-    // Útil para o Flutter checar se uma solicitação já foi avaliada
-    // -----------------------------------------------------------
     @Transactional(readOnly = true)
     public AvaliacaoResponseDTO buscarPorSolicitacao(Integer solicitacaoId) {
         return avaliacaoRepository.findBySolicitacaoId(solicitacaoId)
@@ -87,10 +67,6 @@ public class AvaliacaoService {
                                 + solicitacaoId));
     }
 
-    // -----------------------------------------------------------
-    // LISTAR POR PRESTADOR
-    // Exibe todas as avaliações recebidas no perfil do prestador
-    // -----------------------------------------------------------
     @Transactional(readOnly = true)
     public List<AvaliacaoResponseDTO> listarPorPrestador(Integer prestadorId) {
         return avaliacaoRepository.findByPrestadorId(prestadorId)
@@ -99,14 +75,9 @@ public class AvaliacaoService {
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------------------
-    // MÉDIA DO PRESTADOR
-    // Exibida no card do prestador na home do cliente
-    // -----------------------------------------------------------
     @Transactional(readOnly = true)
     public MediaAvaliacaoResponseDTO calcularMedia(Integer prestadorId) {
 
-        // Valida que o prestador existe
         var prestador = prestadorRepository.findById(prestadorId)
                 .orElseThrow(() -> new RegraNegocioException(
                         "Prestador não encontrado com ID: " + prestadorId));
@@ -117,20 +88,14 @@ public class AvaliacaoService {
         List<AvaliacaoResponseDTO> avaliacoes =
                 listarPorPrestador(prestadorId);
 
-        // Se não tem nenhuma avaliação ainda, média retorna null do banco
-        // Tratamos como 0.0 para não quebrar o Flutter
         return new MediaAvaliacaoResponseDTO(
                 prestadorId,
                 prestador.getNome(),
                 media != null ? Math.round(media * 10.0) / 10.0 : 0.0,
-                // Math.round arredonda para 1 casa decimal: 4.666... → 4.7
                 avaliacoes.size()
         );
     }
 
-    // -----------------------------------------------------------
-    // CONVERTER Entity → DTO
-    // -----------------------------------------------------------
     private AvaliacaoResponseDTO toResponseDTO(Avaliacao a) {
         Solicitacao s = a.getSolicitacao();
 

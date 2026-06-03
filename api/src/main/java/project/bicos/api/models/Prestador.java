@@ -32,12 +32,9 @@ public class Prestador {
     @Column(name = "telefone", length = 20)
     private String telefone;
 
-    // Campo exclusivo do Prestador — uma breve bio do profissional
-    // exibida nos anúncios e no perfil público.
     @Column(name = "descricao", length = 255)
     private String descricao;
 
-    // Mesmo padrão do Cliente: cascade ALL, fetch LAZY, opcional.
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;

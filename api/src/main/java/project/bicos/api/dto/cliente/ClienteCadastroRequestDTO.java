@@ -24,8 +24,6 @@ public class ClienteCadastroRequestDTO {
     @Size(min = 11, max = 14, message = "CPF deve ter entre 11 e 14 caracteres")
     private String cpf;
 
-    // Senha limpa — será transformada em hash no Service.
-    // NUNCA armazenamos ou logamos esse campo.
     @NotBlank(message = "Senha é obrigatória")
     @Size(min = 8, message = "Senha deve ter no mínimo 8 caracteres")
     private String senha;
@@ -33,8 +31,6 @@ public class ClienteCadastroRequestDTO {
     @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
     private String telefone;
 
-    // @Valid propaga a validação para dentro do objeto aninhado.
-    // Sem ele, as anotações dentro de EnderecoRequestDTO são ignoradas.
     @Valid
     private EnderecoRequestDTO endereco;
 }

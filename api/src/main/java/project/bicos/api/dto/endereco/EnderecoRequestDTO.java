@@ -24,6 +24,4 @@ public class EnderecoRequestDTO {
     @Size(max = 100, message = "Complemento deve ter no máximo 100 caracteres")
     private String complemento;
 
-    // bairro, cidade e estado NÃO entram no Request do cadastro.
-    // Serão preenchidos futuramente via consulta automática de CEP (ex: ViaCEP API).
 }

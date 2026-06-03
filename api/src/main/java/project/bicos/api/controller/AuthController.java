@@ -24,33 +24,24 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    // -----------------------------------------------------------------
-    // POST /auth/login/cliente
-    // -----------------------------------------------------------------
     @PostMapping("/login/cliente")
     public ResponseEntity<LoginResponseDTO> loginCliente(
             @RequestBody @Valid LoginRequestDTO dto) {
 
-        // 1. Busca o cliente pelo e-mail
         Cliente cliente = clienteRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RegraNegocioException(
                         "E-mail ou senha inválidos."));
 
-        // 2. Compara a senha digitada com o hash salvo no banco
-        //    passwordEncoder.matches() faz isso de forma segura
-        //    NUNCA compare senhas com .equals() — hashes são irreversíveis
         if (!passwordEncoder.matches(dto.getSenha(), cliente.getSenhaHash())) {
             throw new RegraNegocioException("E-mail ou senha inválidos.");
         }
 
-        // 3. Gera o token JWT com ID, email e perfil
         String token = jwtService.gerarToken(
                 cliente.getId(),
                 cliente.getEmail(),
                 "CLIENTE"
         );
 
-        // 4. Monta e retorna a resposta
         LoginResponseDTO response = new LoginResponseDTO(
                 token,
                 "Bearer",
@@ -63,9 +54,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // -----------------------------------------------------------------
-    // POST /auth/login/prestador
-    // -----------------------------------------------------------------
     @PostMapping("/login/prestador")
     public ResponseEntity<LoginResponseDTO> loginPrestador(
             @RequestBody @Valid LoginRequestDTO dto) {

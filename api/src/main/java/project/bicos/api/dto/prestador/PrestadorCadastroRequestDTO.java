@@ -31,7 +31,6 @@ public class PrestadorCadastroRequestDTO {
     @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
     private String telefone;
 
-    // Campo exclusivo do Prestador — apresentação profissional exibida nos anúncios
     @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
     private String descricao;
 

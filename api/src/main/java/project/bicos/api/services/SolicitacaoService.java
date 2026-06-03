@@ -107,18 +107,12 @@ public class SolicitacaoService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------------------
-    // BUSCAR ENTIDADE — usado pelo AvaliacaoService
-    // ---------------------------------------------------------------
     public Solicitacao buscarEntidadePorId(Integer id) {
         return solicitacaoRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException(
                         "Solicitação não encontrada com ID: " + id));
     }
 
-    // ---------------------------------------------------------------
-    // CONVERTER Entity → DTO
-    // ---------------------------------------------------------------
     private SolicitacaoResponseDTO toResponseDTO(Solicitacao s) {
         return new SolicitacaoResponseDTO(
                 s.getId(),

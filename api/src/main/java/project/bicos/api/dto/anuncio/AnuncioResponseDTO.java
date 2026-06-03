@@ -16,11 +16,8 @@ public class AnuncioResponseDTO {
     private BigDecimal valorBase;
     private String status;
 
-    // Retorna o objeto categoria completo — o Flutter precisa do nome
-    // para exibir nos cards da home
     private CategoriaResponseDTO categoria;
 
-    // Dados básicos do prestador — nome para exibir no card
     private Integer prestadorId;
     private String prestadorNome;
 }

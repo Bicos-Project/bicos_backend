@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-// OncePerRequestFilter garante que esse filtro roda UMA vez por requisição
-// É o "porteiro" que verifica o token antes de qualquer Controller ser executado
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -35,27 +33,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Pega o cabeçalho Authorization da requisição
         String authHeader = request.getHeader("Authorization");
 
-        // 2. Se não há token, deixa passar — o SecurityConfig decidirá
-        //    se a rota precisa de autenticação ou não
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Remove o prefixo "Bearer " para pegar só o token
         String token = authHeader.substring(7);
 
-        // 4. Extrai o email e o perfil do token
         String email = jwtService.extrairEmail(token);
         String perfil = jwtService.extrairPerfil(token);
 
-        // 5. Se conseguiu extrair o email e ainda não há autenticação na sessão
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // 6. Busca o usuário no banco (cliente ou prestador) para confirmar que existe
             boolean usuarioValido = false;
 
             if ("CLIENTE".equals(perfil)) {
@@ -69,20 +60,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         && jwtService.tokenValido(token, email);
             }
 
-            // 7. Se tudo ok, registra a autenticação no contexto de segurança
             if (usuarioValido) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + perfil))
-                                // ex: ROLE_CLIENTE ou ROLE_PRESTADOR
                         );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        // 8. Continua a cadeia de filtros (próximo filtro ou o Controller)
         filterChain.doFilter(request, response);
     }
 }

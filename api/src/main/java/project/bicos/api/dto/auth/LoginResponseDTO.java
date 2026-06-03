@@ -8,9 +8,9 @@ import lombok.*;
 @AllArgsConstructor
 public class LoginResponseDTO {
 
-    private String token;       // JWT que o Flutter vai guardar e usar
+    private String token;
     private String tipo;        // "Bearer" — padrão do mercado
-    private Integer id;         // ID do usuário logado
+    private Integer id;
     private String nome;        // Para o Flutter mostrar "Olá, João!"
     private String email;
     private String perfil;      // "CLIENTE" ou "PRESTADOR"
