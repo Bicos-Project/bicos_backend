@@ -1,0 +1,30 @@
+# =========================================================
+# SERVIDOR
+# =========================================================
+server.port=8080
+
+# =========================================================
+# BANCO DE DADOS — PostgreSQL
+# =========================================================
+spring.datasource.url=jdbc:postgresql://localhost:5432/bicos
+spring.datasource.username=SEU_USUARIO
+spring.datasource.password=SUA_SENHA
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# =========================================================
+# JPA / HIBERNATE
+# =========================================================
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# =========================================================
+# SERIALIZACAO JSON
+# =========================================================
+spring.jackson.default-property-inclusion=non_null
+
+# =========================================================
+# JWT
+# =========================================================
+jwt.secret=SUA_CHAVE_SECRETA_AQUI
+jwt.expiration=86400000
