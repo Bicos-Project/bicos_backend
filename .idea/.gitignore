@@ -1,3 +1,7 @@
+# Ignora pastas .idea em qualquer lugar do projeto (raiz ou subpastas)
+**/.idea/
+# Ignora a pasta target
+**/target/
 # Default ignored files
 /shelf/
 /workspace.xml
@@ -8,3 +12,5 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+# Conexão com o banco e outros
+application.properties
