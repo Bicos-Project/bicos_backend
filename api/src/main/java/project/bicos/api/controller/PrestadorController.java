@@ -6,8 +6,10 @@ import project.bicos.api.services.PrestadorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,8 +35,12 @@ public class PrestadorController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PrestadorResponseDTO>> listarTodos() {
-        List<PrestadorResponseDTO> response = prestadorService.listarTodos();
+    public ResponseEntity<List<PrestadorResponseDTO>> listarTodos(
+            @RequestParam(value = "categoriaNome", required = false) String categoriaNome) {
+
+        List<PrestadorResponseDTO> response = categoriaNome != null
+                ? prestadorService.listarPorCategoriaNome(categoriaNome)
+                : prestadorService.listarTodos();
         return ResponseEntity.ok(response);
     }
 
@@ -51,5 +57,27 @@ public class PrestadorController {
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
         prestadorService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{id}/fotos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PrestadorResponseDTO> adicionarFoto(
+            @PathVariable Integer id,
+            @RequestParam("foto") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        PrestadorResponseDTO response = prestadorService.adicionarFoto(id, file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{id}/fotos/{fotoId}")
+    public ResponseEntity<PrestadorResponseDTO> removerFoto(
+            @PathVariable Integer id,
+            @PathVariable Integer fotoId) {
+
+        PrestadorResponseDTO response = prestadorService.removerFoto(id, fotoId);
+        return ResponseEntity.ok(response);
     }
 }

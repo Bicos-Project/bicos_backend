@@ -36,6 +36,9 @@ public class Cliente {
     @Column(name = "cpf", unique = true, length = 14)
     private String cpf;
 
+    @Column(name = "foto_url", length = 255)
+    private String fotoUrl;
+
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;

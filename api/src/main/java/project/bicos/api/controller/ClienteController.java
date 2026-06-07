@@ -3,11 +3,14 @@ package project.bicos.api.controller;
 import project.bicos.api.dto.cliente.ClienteCadastroRequestDTO;
 import project.bicos.api.dto.cliente.ClienteResponseDTO;
 import project.bicos.api.services.ClienteService;
+import project.bicos.api.services.StorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,6 +20,7 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteService clienteService;
+    private final StorageService storageService;
 
     @PostMapping
     public ResponseEntity<ClienteResponseDTO> cadastrar(
@@ -53,7 +57,19 @@ public class ClienteController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
         clienteService.deletar(id);
-
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{id}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ClienteResponseDTO> atualizarFoto(
+            @PathVariable Integer id,
+            @RequestParam("foto") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ClienteResponseDTO response = clienteService.atualizarFoto(id, file);
+        return ResponseEntity.ok(response);
     }
 }

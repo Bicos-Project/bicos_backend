@@ -1,6 +1,7 @@
 package project.bicos.api.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 import project.bicos.api.dto.cliente.ClienteCadastroRequestDTO;
 import project.bicos.api.dto.cliente.ClienteResponseDTO;
 import project.bicos.api.dto.endereco.EnderecoResponseDTO;
@@ -21,6 +22,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StorageService storageService;
 
     @Transactional
     public ClienteResponseDTO cadastrar(ClienteCadastroRequestDTO dto) {
@@ -104,10 +106,28 @@ public class ClienteService {
 
     @Transactional
     public void deletar(Integer id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new RegraNegocioException("Cliente não encontrado com ID: " + id);
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado com ID: " + id));
+
+        if (cliente.getFotoUrl() != null) {
+            storageService.deletar(cliente.getFotoUrl());
         }
         clienteRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ClienteResponseDTO atualizarFoto(Integer id, MultipartFile file) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado com ID: " + id));
+
+        if (cliente.getFotoUrl() != null) {
+            storageService.deletar(cliente.getFotoUrl());
+        }
+
+        String url = storageService.salvar(file);
+        cliente.setFotoUrl(url);
+
+        return toResponseDTO(clienteRepository.save(cliente));
     }
 
     private ClienteResponseDTO toResponseDTO(Cliente cliente) {
@@ -133,6 +153,7 @@ public class ClienteService {
                 cliente.getEmail(),
                 cliente.getCpf(),
                 cliente.getTelefone(),
+                cliente.getFotoUrl(),
                 enderecoDTO
         );
     }

@@ -1,17 +1,23 @@
 package project.bicos.api.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.multipart.MultipartFile;
 import project.bicos.api.dto.endereco.EnderecoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorCadastroRequestDTO;
+import project.bicos.api.dto.prestador.PrestadorFotoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorResponseDTO;
 import project.bicos.api.exceptions.RegraNegocioException;
 import project.bicos.api.models.Endereco;
 import project.bicos.api.models.Prestador;
+import project.bicos.api.models.PrestadorFoto;
+import project.bicos.api.repository.PrestadorFotoRepository;
 import project.bicos.api.repository.PrestadorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +26,9 @@ import java.util.stream.Collectors;
 public class PrestadorService {
 
     private final PrestadorRepository prestadorRepository;
+    private final PrestadorFotoRepository prestadorFotoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StorageService storageService;
 
     @Transactional
     public PrestadorResponseDTO cadastrar(PrestadorCadastroRequestDTO dto) {
@@ -48,6 +56,7 @@ public class PrestadorService {
         prestador.setCpf(dto.getCpf());
         prestador.setTelefone(dto.getTelefone());
         prestador.setDescricao(dto.getDescricao());
+        prestador.setEspecialidade(dto.getEspecialidade());
         prestador.setEndereco(endereco);
 
         prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
@@ -71,6 +80,14 @@ public class PrestadorService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<PrestadorResponseDTO> listarPorCategoriaNome(String nomeCategoria) {
+        return prestadorRepository.findByCategoriaNome(nomeCategoria)
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public PrestadorResponseDTO atualizar(Integer id, PrestadorCadastroRequestDTO dto) {
         Prestador prestador = prestadorRepository.findById(id)
@@ -89,6 +106,7 @@ public class PrestadorService {
         prestador.setCpf(dto.getCpf());
         prestador.setTelefone(dto.getTelefone());
         prestador.setDescricao(dto.getDescricao());
+        prestador.setEspecialidade(dto.getEspecialidade());
         prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
 
         if (dto.getEndereco() != null) {
@@ -105,10 +123,51 @@ public class PrestadorService {
 
     @Transactional
     public void deletar(Integer id) {
-        if (!prestadorRepository.existsById(id)) {
-            throw new RegraNegocioException("Prestador não encontrado com ID: " + id);
+        Prestador prestador = prestadorRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Prestador não encontrado com ID: " + id));
+
+        if (prestador.getFotos() != null) {
+            prestador.getFotos().forEach(foto -> storageService.deletar(foto.getUrl()));
         }
         prestadorRepository.deleteById(id);
+    }
+
+    @Transactional
+    public PrestadorResponseDTO adicionarFoto(Integer id, MultipartFile file) {
+        Prestador prestador = prestadorRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("Prestador não encontrado com ID: " + id));
+
+        String url = storageService.salvar(file);
+        int ordem = prestador.getFotos().isEmpty()
+                ? 0
+                : prestador.getFotos().stream().mapToInt(PrestadorFoto::getOrdem).max().orElse(0) + 1;
+
+        PrestadorFoto foto = new PrestadorFoto();
+        foto.setUrl(url);
+        foto.setOrdem(ordem);
+        foto.setPrestador(prestador);
+        prestador.getFotos().add(foto);
+
+        return toResponseDTO(prestadorRepository.save(prestador));
+    }
+
+    @Transactional
+    public PrestadorResponseDTO removerFoto(Integer prestadorId, Integer fotoId) {
+        Prestador prestador = prestadorRepository.findById(prestadorId)
+                .orElseThrow(() -> new RegraNegocioException("Prestador não encontrado com ID: " + prestadorId));
+
+        PrestadorFoto foto = prestadorFotoRepository.findById(fotoId)
+                .orElseThrow(() -> new RegraNegocioException("Foto não encontrada com ID: " + fotoId));
+
+        if (!foto.getPrestador().getId().equals(prestadorId)) {
+            throw new RegraNegocioException("Esta foto não pertence ao prestador informado.");
+        }
+
+        storageService.deletar(foto.getUrl());
+        prestador.getFotos().remove(foto);
+        prestadorFotoRepository.delete(foto);
+
+        return toResponseDTO(prestador);
     }
 
     private PrestadorResponseDTO toResponseDTO(Prestador prestador) {
@@ -128,6 +187,16 @@ public class PrestadorService {
             );
         }
 
+        List<PrestadorFotoResponseDTO> fotosDTO = prestador.getFotos() != null
+                ? prestador.getFotos().stream()
+                    .map(f -> new PrestadorFotoResponseDTO(f.getId(), f.getUrl()))
+                    .collect(Collectors.toList())
+                : new ArrayList<>();
+
+        BigDecimal avaliacao = prestador.getAvaliacao() != null
+                ? prestador.getAvaliacao()
+                : BigDecimal.ZERO;
+
         return new PrestadorResponseDTO(
                 prestador.getId(),
                 prestador.getNome(),
@@ -135,6 +204,9 @@ public class PrestadorService {
                 prestador.getCpf(),
                 prestador.getTelefone(),
                 prestador.getDescricao(),
+                prestador.getEspecialidade(),
+                avaliacao,
+                fotosDTO,
                 enderecoDTO
         );
     }

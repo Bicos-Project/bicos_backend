@@ -48,7 +48,8 @@ public class AuthController {
                 cliente.getId(),
                 cliente.getNome(),
                 cliente.getEmail(),
-                "CLIENTE"
+                "CLIENTE",
+                cliente.getFotoUrl()
         );
 
         return ResponseEntity.ok(response);
@@ -72,13 +73,18 @@ public class AuthController {
                 "PRESTADOR"
         );
 
+        String fotoUrl = prestador.getFotos() != null && !prestador.getFotos().isEmpty()
+                ? prestador.getFotos().get(0).getUrl()
+                : null;
+
         LoginResponseDTO response = new LoginResponseDTO(
                 token,
                 "Bearer",
                 prestador.getId(),
                 prestador.getNome(),
                 prestador.getEmail(),
-                "PRESTADOR"
+                "PRESTADOR",
+                fotoUrl
         );
 
         return ResponseEntity.ok(response);

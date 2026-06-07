@@ -4,6 +4,8 @@ import project.bicos.api.models.enums.StatusAnuncio;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "anuncio")
@@ -43,4 +45,8 @@ public class Anuncio {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
+
+    @OneToMany(mappedBy = "anuncio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("ordem ASC")
+    private List<AnuncioFoto> fotos = new ArrayList<>();
 }

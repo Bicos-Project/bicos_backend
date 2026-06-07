@@ -34,6 +34,9 @@ public class PrestadorCadastroRequestDTO {
     @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
     private String descricao;
 
+    @Size(max = 100, message = "Especialidade deve ter no máximo 100 caracteres")
+    private String especialidade;
+
     @Valid
     private EnderecoRequestDTO endereco;
 }

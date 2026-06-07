@@ -107,6 +107,14 @@ public class SolicitacaoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<SolicitacaoResponseDTO> listarPorPrestador(Integer prestadorId) {
+        return solicitacaoRepository.findByPrestadorId(prestadorId)
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public Solicitacao buscarEntidadePorId(Integer id) {
         return solicitacaoRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException(

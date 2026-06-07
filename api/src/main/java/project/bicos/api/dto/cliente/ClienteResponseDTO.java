@@ -14,5 +14,6 @@ public class ClienteResponseDTO {
     private String email;
     private String cpf;
     private String telefone;
+    private String fotoUrl;
     private EnderecoResponseDTO endereco;
 }

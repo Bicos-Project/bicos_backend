@@ -14,4 +14,5 @@ public class LoginResponseDTO {
     private String nome;        // Para o Flutter mostrar "Olá, João!"
     private String email;
     private String perfil;      // "CLIENTE" ou "PRESTADOR"
+    private String fotoUrl;     // URL da foto de perfil
 }

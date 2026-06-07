@@ -3,6 +3,10 @@ package project.bicos.api.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "prestador")
 @Getter
@@ -35,7 +39,17 @@ public class Prestador {
     @Column(name = "descricao", length = 255)
     private String descricao;
 
+    @Column(name = "especialidade", length = 100)
+    private String especialidade;
+
+    @Column(name = "avaliacao", precision = 3, scale = 1)
+    private BigDecimal avaliacao;
+
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
+
+    @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("ordem ASC")
+    private List<PrestadorFoto> fotos = new ArrayList<>();
 }

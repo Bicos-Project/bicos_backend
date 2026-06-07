@@ -42,6 +42,12 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.listarPorAnuncio(anuncioId));
     }
 
+    @GetMapping(params = "prestadorId")
+    public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorPrestador(
+            @RequestParam Integer prestadorId) {
+        return ResponseEntity.ok(solicitacaoService.listarPorPrestador(prestadorId));
+    }
+
     @PatchMapping("/{id}/avancar")
     public ResponseEntity<SolicitacaoResponseDTO> avancarStatus(
             @PathVariable Integer id) {

@@ -6,8 +6,10 @@ import project.bicos.api.services.AnuncioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -56,5 +58,26 @@ public class AnuncioController {
     @PatchMapping("/{id}/desativar")
     public ResponseEntity<AnuncioResponseDTO> desativar(@PathVariable Integer id) {
         return ResponseEntity.ok(anuncioService.desativar(id));
+    }
+
+    @PostMapping(value = "/{id}/fotos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AnuncioResponseDTO> adicionarFoto(
+            @PathVariable Integer id,
+            @RequestParam("foto") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(anuncioService.adicionarFoto(id, file));
+    }
+
+    @DeleteMapping("/{id}/fotos/{fotoId}")
+    public ResponseEntity<AnuncioResponseDTO> removerFoto(
+            @PathVariable Integer id,
+            @PathVariable Integer fotoId) {
+
+        return ResponseEntity.ok(anuncioService.removerFoto(id, fotoId));
     }
 }
