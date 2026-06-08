@@ -2,15 +2,19 @@ package project.bicos.api.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
+import project.bicos.api.dto.categoria.CategoriaResponseDTO;
 import project.bicos.api.dto.endereco.EnderecoResponseDTO;
+import project.bicos.api.dto.prestador.PrestadorAtualizacaoRequestDTO;
 import project.bicos.api.dto.prestador.PrestadorCadastroRequestDTO;
 import project.bicos.api.dto.prestador.PrestadorFotoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorProximoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorResponseDTO;
 import project.bicos.api.exceptions.RegraNegocioException;
+import project.bicos.api.models.Categoria;
 import project.bicos.api.models.Endereco;
 import project.bicos.api.models.Prestador;
 import project.bicos.api.models.PrestadorFoto;
+import project.bicos.api.repository.CategoriaRepository;
 import project.bicos.api.repository.PrestadorFotoRepository;
 import project.bicos.api.repository.PrestadorRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,7 @@ public class PrestadorService {
 
     private final PrestadorRepository prestadorRepository;
     private final PrestadorFotoRepository prestadorFotoRepository;
+    private final CategoriaRepository categoriaRepository;
     private final PasswordEncoder passwordEncoder;
     private final StorageService storageService;
 
@@ -41,6 +46,13 @@ public class PrestadorService {
 
         if (prestadorRepository.existsByCpf(dto.getCpf())) {
             throw new RegraNegocioException("CPF já cadastrado para outro prestador.");
+        }
+
+        Categoria categoria = null;
+        if (dto.getCategoriaId() != null) {
+            categoria = categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new RegraNegocioException(
+                            "Categoria não encontrada com ID: " + dto.getCategoriaId()));
         }
 
         Endereco endereco = null;
@@ -64,6 +76,7 @@ public class PrestadorService {
         prestador.setTelefone(dto.getTelefone());
         prestador.setDescricao(dto.getDescricao());
         prestador.setEspecialidade(dto.getEspecialidade());
+        prestador.setCategoria(categoria);
         prestador.setEndereco(endereco);
 
         prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
@@ -96,7 +109,7 @@ public class PrestadorService {
     }
 
     @Transactional
-    public PrestadorResponseDTO atualizar(Integer id, PrestadorCadastroRequestDTO dto) {
+    public PrestadorResponseDTO atualizar(Integer id, PrestadorAtualizacaoRequestDTO dto) {
         Prestador prestador = prestadorRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Prestador não encontrado com ID: " + id));
 
@@ -104,17 +117,18 @@ public class PrestadorService {
                 .filter(p -> !p.getId().equals(id))
                 .ifPresent(p -> { throw new RegraNegocioException("E-mail já em uso por outro prestador."); });
 
-        prestadorRepository.findByCpf(dto.getCpf())
-                .filter(p -> !p.getId().equals(id))
-                .ifPresent(p -> { throw new RegraNegocioException("CPF já em uso por outro prestador."); });
-
         prestador.setNome(dto.getNome());
         prestador.setEmail(dto.getEmail());
-        prestador.setCpf(dto.getCpf());
         prestador.setTelefone(dto.getTelefone());
         prestador.setDescricao(dto.getDescricao());
         prestador.setEspecialidade(dto.getEspecialidade());
-        prestador.setSenhaHash(passwordEncoder.encode(dto.getSenha()));
+
+        if (dto.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new RegraNegocioException(
+                            "Categoria não encontrada com ID: " + dto.getCategoriaId()));
+            prestador.setCategoria(categoria);
+        }
 
         if (dto.getEndereco() != null) {
             Endereco endereco = prestador.getEndereco() != null ? prestador.getEndereco() : new Endereco();
@@ -180,6 +194,14 @@ public class PrestadorService {
         prestadorFotoRepository.delete(foto);
 
         return toResponseDTO(prestador);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PrestadorResponseDTO> buscar(String q) {
+        return prestadorRepository.buscarPorNomeOuEspecialidade(q)
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -253,6 +275,13 @@ public class PrestadorService {
             );
         }
 
+        CategoriaResponseDTO categoriaDTO = null;
+        if (prestador.getCategoria() != null) {
+            Categoria c = prestador.getCategoria();
+            categoriaDTO = new CategoriaResponseDTO(
+                    c.getId(), c.getNome(), c.getDescricao());
+        }
+
         List<PrestadorFotoResponseDTO> fotosDTO = prestador.getFotos() != null
                 ? prestador.getFotos().stream()
                     .map(f -> new PrestadorFotoResponseDTO(f.getId(), f.getUrl()))
@@ -272,6 +301,7 @@ public class PrestadorService {
                 prestador.getDescricao(),
                 prestador.getEspecialidade(),
                 avaliacao,
+                categoriaDTO,
                 fotosDTO,
                 enderecoDTO
         );

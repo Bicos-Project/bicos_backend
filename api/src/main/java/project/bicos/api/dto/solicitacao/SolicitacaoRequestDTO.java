@@ -3,6 +3,7 @@ package project.bicos.api.dto.solicitacao;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -16,9 +17,13 @@ public class SolicitacaoRequestDTO {
 
     private LocalDate dataSolicitacao;
 
+    private LocalDate dataEstimada;
+
+    private BigDecimal valorSugerido;
+
     @NotNull(message = "ID do cliente é obrigatório")
     private Integer clienteId;
 
-    @NotNull(message = "ID do anúncio é obrigatório")
-    private Integer anuncioId;
+    @NotNull(message = "ID do prestador é obrigatório")
+    private Integer prestadorId;
 }

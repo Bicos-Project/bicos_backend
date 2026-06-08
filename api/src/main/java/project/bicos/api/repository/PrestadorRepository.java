@@ -20,6 +20,9 @@ public interface PrestadorRepository extends JpaRepository<Prestador, Integer> {
 
     boolean existsByCpf(String cpf);
 
-    @Query("SELECT DISTINCT a.prestador FROM Anuncio a WHERE a.categoria.nome = :nomeCategoria")
+    @Query("SELECT p FROM Prestador p WHERE p.categoria.nome = :nomeCategoria")
     List<Prestador> findByCategoriaNome(@Param("nomeCategoria") String nomeCategoria);
+
+    @Query("SELECT p FROM Prestador p WHERE LOWER(p.nome) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(p.especialidade) LIKE LOWER(CONCAT('%', :q, '%'))")
+    List<Prestador> buscarPorNomeOuEspecialidade(@Param("q") String q);
 }

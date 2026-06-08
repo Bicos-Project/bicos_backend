@@ -1,5 +1,6 @@
 package project.bicos.api.controller;
 
+import project.bicos.api.dto.prestador.PrestadorAtualizacaoRequestDTO;
 import project.bicos.api.dto.prestador.PrestadorCadastroRequestDTO;
 import project.bicos.api.dto.prestador.PrestadorProximoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorResponseDTO;
@@ -48,7 +49,7 @@ public class PrestadorController {
     @PutMapping("/{id}")
     public ResponseEntity<PrestadorResponseDTO> atualizar(
             @PathVariable Integer id,
-            @RequestBody @Valid PrestadorCadastroRequestDTO dto) {
+            @RequestBody @Valid PrestadorAtualizacaoRequestDTO dto) {
 
         PrestadorResponseDTO response = prestadorService.atualizar(id, dto);
         return ResponseEntity.ok(response);
@@ -79,6 +80,13 @@ public class PrestadorController {
             @PathVariable Integer fotoId) {
 
         PrestadorResponseDTO response = prestadorService.removerFoto(id, fotoId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PrestadorResponseDTO>> buscar(
+            @RequestParam String q) {
+        List<PrestadorResponseDTO> response = prestadorService.buscar(q);
         return ResponseEntity.ok(response);
     }
 

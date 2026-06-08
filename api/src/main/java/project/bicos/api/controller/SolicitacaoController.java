@@ -36,12 +36,6 @@ public class SolicitacaoController {
         return ResponseEntity.ok(solicitacaoService.listarPorCliente(clienteId));
     }
 
-    @GetMapping(params = "anuncioId")
-    public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorAnuncio(
-            @RequestParam Integer anuncioId) {
-        return ResponseEntity.ok(solicitacaoService.listarPorAnuncio(anuncioId));
-    }
-
     @GetMapping(params = "prestadorId")
     public ResponseEntity<List<SolicitacaoResponseDTO>> listarPorPrestador(
             @RequestParam Integer prestadorId) {

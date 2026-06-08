@@ -9,6 +9,7 @@ import project.bicos.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ public class SolicitacaoService {
 
     private final SolicitacaoRepository solicitacaoRepository;
     private final ClienteRepository clienteRepository;
-    private final AnuncioRepository anuncioRepository;
+    private final PrestadorRepository prestadorRepository;
     private final AvaliacaoRepository avaliacaoRepository;
 
     @Transactional
@@ -29,25 +30,20 @@ public class SolicitacaoService {
                 .orElseThrow(() -> new RegraNegocioException(
                         "Cliente não encontrado com ID: " + dto.getClienteId()));
 
-        Anuncio anuncio = anuncioRepository.findById(dto.getAnuncioId())
+        Prestador prestador = prestadorRepository.findById(dto.getPrestadorId())
                 .orElseThrow(() -> new RegraNegocioException(
-                        "Anúncio não encontrado com ID: " + dto.getAnuncioId()));
-
-        if (anuncio.getStatus().name().equals("inativo")) {
-            throw new RegraNegocioException(
-                    "Este anúncio não está mais disponível.");
-        }
+                        "Prestador não encontrado com ID: " + dto.getPrestadorId()));
 
         boolean temSolicitacaoAberta = solicitacaoRepository
-                .existsByClienteIdAndAnuncioIdAndStatusNot(
+                .existsByClienteIdAndPrestadorIdAndStatusNot(
                         dto.getClienteId(),
-                        dto.getAnuncioId(),
+                        dto.getPrestadorId(),
                         StatusSolicitacao.finalizado
                 );
 
         if (temSolicitacaoAberta) {
             throw new RegraNegocioException(
-                    "Você já possui uma solicitação em andamento para este serviço.");
+                    "Você já possui uma solicitação em andamento para este prestador.");
         }
 
         Solicitacao solicitacao = new Solicitacao();
@@ -57,11 +53,13 @@ public class SolicitacaoService {
                         ? dto.getDataSolicitacao()
                         : LocalDate.now()
         );
+        solicitacao.setDataEstimada(dto.getDataEstimada());
+        solicitacao.setValorSugerido(dto.getValorSugerido());
         solicitacao.setStatus(StatusSolicitacao.orcamento);
         solicitacao.setPrestadorConfirmouPagamento(false);
         solicitacao.setClienteConfirmouPagamento(false);
         solicitacao.setCliente(cliente);
-        solicitacao.setAnuncio(anuncio);
+        solicitacao.setPrestador(prestador);
 
         return toResponseDTO(solicitacaoRepository.save(solicitacao));
     }
@@ -149,14 +147,6 @@ public class SolicitacaoService {
     }
 
     @Transactional(readOnly = true)
-    public List<SolicitacaoResponseDTO> listarPorAnuncio(Integer anuncioId) {
-        return solicitacaoRepository.findByAnuncioId(anuncioId)
-                .stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public List<SolicitacaoResponseDTO> listarPorPrestador(Integer prestadorId) {
         return solicitacaoRepository.findByPrestadorId(prestadorId)
                 .stream()
@@ -175,17 +165,29 @@ public class SolicitacaoService {
                 .existsBySolicitacaoIdAndAvaliadorTipo(s.getId(), "CLIENTE");
         boolean prestadorAvaliou = avaliacaoRepository
                 .existsBySolicitacaoIdAndAvaliadorTipo(s.getId(), "PRESTADOR");
+
+        Double clienteAvaliacaoMedia = avaliacaoRepository
+                .calcularMediaCliente(s.getCliente().getId());
+
+        String categoriaNome = s.getPrestador().getCategoria() != null
+                ? s.getPrestador().getCategoria().getNome()
+                : null;
+
         return new SolicitacaoResponseDTO(
                 s.getId(),
                 s.getDescricao(),
                 s.getDataSolicitacao(),
+                s.getDataEstimada(),
+                s.getValorSugerido(),
                 s.getStatus().name(),
                 s.getCliente().getId(),
                 s.getCliente().getNome(),
-                s.getAnuncio().getId(),
-                s.getAnuncio().getTitulo(),
-                s.getAnuncio().getPrestador().getId(),
-                s.getAnuncio().getPrestador().getNome(),
+                clienteAvaliacaoMedia != null
+                        ? Math.round(clienteAvaliacaoMedia * 10.0) / 10.0
+                        : 0.0,
+                s.getPrestador().getId(),
+                s.getPrestador().getNome(),
+                categoriaNome,
                 s.getPrestadorConfirmouPagamento(),
                 s.getClienteConfirmouPagamento(),
                 clienteAvaliou,

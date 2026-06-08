@@ -5,13 +5,17 @@ import project.bicos.api.dto.avaliacao.AvaliacaoResponseDTO;
 import project.bicos.api.dto.avaliacao.MediaAvaliacaoResponseDTO;
 import project.bicos.api.exceptions.RegraNegocioException;
 import project.bicos.api.models.Avaliacao;
+import project.bicos.api.models.Cliente;
+import project.bicos.api.models.Prestador;
 import project.bicos.api.models.Solicitacao;
 import project.bicos.api.models.enums.StatusSolicitacao;
 import project.bicos.api.repository.AvaliacaoRepository;
+import project.bicos.api.repository.ClienteRepository;
 import project.bicos.api.repository.PrestadorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +26,7 @@ public class AvaliacaoService {
     private final AvaliacaoRepository avaliacaoRepository;
     private final SolicitacaoService solicitacaoService;
     private final PrestadorRepository prestadorRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public AvaliacaoResponseDTO criar(AvaliacaoRequestDTO dto) {
@@ -49,7 +54,31 @@ public class AvaliacaoService {
         avaliacao.setAvaliadorTipo(dto.getAvaliadorTipo());
         avaliacao.setSolicitacao(solicitacao);
 
-        return toResponseDTO(avaliacaoRepository.save(avaliacao));
+        Avaliacao saved = avaliacaoRepository.save(avaliacao);
+
+        // Recalcular e atualizar a média do prestador
+        Prestador prestador = solicitacao.getPrestador();
+        Double media = avaliacaoRepository
+                .calcularMediaPorPrestador(prestador.getId());
+        prestador.setAvaliacao(media != null
+                ? java.math.BigDecimal.valueOf(
+                        Math.round(media * 10.0) / 10.0)
+                : java.math.BigDecimal.ZERO);
+        prestadorRepository.save(prestador);
+
+        // Recalcular e atualizar a média do cliente (quando avaliado por prestador)
+        if ("PRESTADOR".equals(dto.getAvaliadorTipo())) {
+            Cliente cliente = solicitacao.getCliente();
+            Double mediaCliente = avaliacaoRepository
+                    .calcularMediaCliente(cliente.getId());
+            cliente.setAvaliacao(mediaCliente != null
+                    ? java.math.BigDecimal.valueOf(
+                            Math.round(mediaCliente * 10.0) / 10.0)
+                    : java.math.BigDecimal.ZERO);
+            clienteRepository.save(cliente);
+        }
+
+        return toResponseDTO(saved);
     }
 
     @Transactional(readOnly = true)
@@ -106,8 +135,8 @@ public class AvaliacaoService {
                 a.getComentario(),
                 a.getAvaliadorTipo(),
                 s.getId(),
-                s.getAnuncio().getPrestador().getId(),
-                s.getAnuncio().getPrestador().getNome(),
+                s.getPrestador().getId(),
+                s.getPrestador().getNome(),
                 s.getCliente().getId(),
                 s.getCliente().getNome()
         );

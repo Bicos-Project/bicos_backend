@@ -3,6 +3,8 @@ package project.bicos.api.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "cliente")
 @Getter
@@ -38,6 +40,9 @@ public class Cliente {
 
     @Column(name = "foto_url", length = 255)
     private String fotoUrl;
+
+    @Column(name = "avaliacao", precision = 3, scale = 1)
+    private BigDecimal avaliacao;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "id_endereco", referencedColumnName = "id_endereco")

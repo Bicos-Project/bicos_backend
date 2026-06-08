@@ -3,6 +3,7 @@ package project.bicos.api.models;
 import project.bicos.api.models.enums.StatusSolicitacao;
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -29,6 +30,12 @@ public class Solicitacao {
     @Column(name = "data_solicitacao")
     private LocalDate dataSolicitacao;
 
+    @Column(name = "data_estimada")
+    private LocalDate dataEstimada;
+
+    @Column(name = "valor_sugerido", precision = 10, scale = 2)
+    private BigDecimal valorSugerido;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private StatusSolicitacao status;
@@ -44,6 +51,6 @@ public class Solicitacao {
     private Cliente cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_anuncio", nullable = false)
-    private Anuncio anuncio;
+    @JoinColumn(name = "id_prestador", nullable = false)
+    private Prestador prestador;
 }

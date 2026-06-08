@@ -13,16 +13,14 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Intege
 
     List<Solicitacao> findByClienteId(Integer clienteId);
 
-    List<Solicitacao> findByAnuncioId(Integer anuncioId);
-
-    boolean existsByClienteIdAndAnuncioIdAndStatusNot(
+    boolean existsByClienteIdAndPrestadorIdAndStatusNot(
             Integer clienteId,
-            Integer anuncioId,
+            Integer prestadorId,
             StatusSolicitacao status
     );
 
     @Query("SELECT s FROM Solicitacao s " +
-            "WHERE s.anuncio.prestador.id = :prestadorId")
+            "WHERE s.prestador.id = :prestadorId")
     List<Solicitacao> findByPrestadorId(
             @Param("prestadorId") Integer prestadorId);
 }
