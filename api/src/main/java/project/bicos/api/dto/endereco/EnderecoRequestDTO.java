@@ -24,4 +24,16 @@ public class EnderecoRequestDTO {
     @Size(max = 100, message = "Complemento deve ter no máximo 100 caracteres")
     private String complemento;
 
+    private Double latitude;
+
+    private Double longitude;
+
+    @Size(max = 100)
+    private String bairro;
+
+    @Size(max = 100)
+    private String cidade;
+
+    @Size(max = 2)
+    private String estado;
 }

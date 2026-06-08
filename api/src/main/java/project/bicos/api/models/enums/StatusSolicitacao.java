@@ -4,5 +4,6 @@ public enum StatusSolicitacao {
     orcamento,
     em_andamento,
     esperando_pagamento,
-    finalizado
+    finalizado,
+    cancelado
 }

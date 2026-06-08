@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "avaliacao")
+@Table(name = "avaliacao", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"id_solicitacao", "avaliador_tipo"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +29,10 @@ public class Avaliacao {
     @Column(name = "comentario", length = 500)
     private String comentario;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_solicitacao", nullable = false, unique = true)
+    @Column(name = "avaliador_tipo", nullable = false, length = 10)
+    private String avaliadorTipo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_solicitacao", nullable = false)
     private Solicitacao solicitacao;
 }

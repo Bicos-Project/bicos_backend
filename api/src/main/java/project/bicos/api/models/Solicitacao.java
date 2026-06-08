@@ -33,6 +33,12 @@ public class Solicitacao {
     @Column(name = "status", nullable = false, length = 30)
     private StatusSolicitacao status;
 
+    @Column(name = "prestador_confirmou_pagamento", nullable = false)
+    private Boolean prestadorConfirmouPagamento = false;
+
+    @Column(name = "cliente_confirmou_pagamento", nullable = false)
+    private Boolean clienteConfirmouPagamento = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;

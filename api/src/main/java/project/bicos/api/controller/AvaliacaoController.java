@@ -32,7 +32,7 @@ public class AvaliacaoController {
     }
 
     @GetMapping("/solicitacao/{solicitacaoId}")
-    public ResponseEntity<AvaliacaoResponseDTO> buscarPorSolicitacao(
+    public ResponseEntity<List<AvaliacaoResponseDTO>> buscarPorSolicitacao(
             @PathVariable Integer solicitacaoId) {
         return ResponseEntity.ok(
                 avaliacaoService.buscarPorSolicitacao(solicitacaoId));

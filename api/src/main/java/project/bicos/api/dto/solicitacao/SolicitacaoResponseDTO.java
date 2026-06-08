@@ -21,4 +21,9 @@ public class SolicitacaoResponseDTO {
     private String anuncioTitulo;
     private Integer prestadorId;
     private String prestadorNome;
+    private Boolean prestadorConfirmouPagamento;
+    private Boolean clienteConfirmouPagamento;
+
+    private Boolean clienteAvaliou;
+    private Boolean prestadorAvaliou;
 }

@@ -41,4 +41,10 @@ public class Endereco {
 
     @Column(name = "estado", length = 2)
     private String estado;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
 }

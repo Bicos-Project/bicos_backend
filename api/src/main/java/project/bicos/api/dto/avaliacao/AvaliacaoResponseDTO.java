@@ -11,6 +11,7 @@ public class AvaliacaoResponseDTO {
     private Integer id;
     private Integer nota;
     private String comentario;
+    private String avaliadorTipo;
 
     private Integer solicitacaoId;
 

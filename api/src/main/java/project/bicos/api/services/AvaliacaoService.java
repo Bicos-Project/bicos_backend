@@ -36,15 +36,17 @@ public class AvaliacaoService {
             );
         }
 
-        if (avaliacaoRepository.existsBySolicitacaoId(dto.getSolicitacaoId())) {
+        if (avaliacaoRepository.existsBySolicitacaoIdAndAvaliadorTipo(
+                dto.getSolicitacaoId(), dto.getAvaliadorTipo())) {
             throw new RegraNegocioException(
-                    "Essa solicitação já possui uma avaliação."
+                    "Você já avaliou esta solicitação."
             );
         }
 
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
+        avaliacao.setAvaliadorTipo(dto.getAvaliadorTipo());
         avaliacao.setSolicitacao(solicitacao);
 
         return toResponseDTO(avaliacaoRepository.save(avaliacao));
@@ -59,12 +61,11 @@ public class AvaliacaoService {
     }
 
     @Transactional(readOnly = true)
-    public AvaliacaoResponseDTO buscarPorSolicitacao(Integer solicitacaoId) {
+    public List<AvaliacaoResponseDTO> buscarPorSolicitacao(Integer solicitacaoId) {
         return avaliacaoRepository.findBySolicitacaoId(solicitacaoId)
+                .stream()
                 .map(this::toResponseDTO)
-                .orElseThrow(() -> new RegraNegocioException(
-                        "Nenhuma avaliação encontrada para a solicitação ID: "
-                                + solicitacaoId));
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +104,7 @@ public class AvaliacaoService {
                 a.getId(),
                 a.getNota(),
                 a.getComentario(),
+                a.getAvaliadorTipo(),
                 s.getId(),
                 s.getAnuncio().getPrestador().getId(),
                 s.getAnuncio().getPrestador().getNome(),

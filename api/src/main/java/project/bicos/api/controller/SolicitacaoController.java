@@ -53,4 +53,18 @@ public class SolicitacaoController {
             @PathVariable Integer id) {
         return ResponseEntity.ok(solicitacaoService.avancarStatus(id));
     }
+
+    @PatchMapping("/{id}/confirmar-pagamento")
+    public ResponseEntity<SolicitacaoResponseDTO> confirmarPagamento(
+            @PathVariable Integer id,
+            @RequestParam String tipo) {
+        return ResponseEntity.ok(
+                solicitacaoService.confirmarPagamento(id, tipo));
+    }
+
+    @PatchMapping("/{id}/recusar")
+    public ResponseEntity<SolicitacaoResponseDTO> recusar(
+            @PathVariable Integer id) {
+        return ResponseEntity.ok(solicitacaoService.recusar(id));
+    }
 }

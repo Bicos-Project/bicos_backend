@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import project.bicos.api.dto.endereco.EnderecoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorCadastroRequestDTO;
 import project.bicos.api.dto.prestador.PrestadorFotoResponseDTO;
+import project.bicos.api.dto.prestador.PrestadorProximoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorResponseDTO;
 import project.bicos.api.exceptions.RegraNegocioException;
 import project.bicos.api.models.Endereco;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,11 @@ public class PrestadorService {
             endereco.setLogradouro(dto.getEndereco().getLogradouro());
             endereco.setNumero(dto.getEndereco().getNumero());
             endereco.setComplemento(dto.getEndereco().getComplemento());
+            endereco.setLatitude(dto.getEndereco().getLatitude());
+            endereco.setLongitude(dto.getEndereco().getLongitude());
+            endereco.setBairro(dto.getEndereco().getBairro());
+            endereco.setCidade(dto.getEndereco().getCidade());
+            endereco.setEstado(dto.getEndereco().getEstado());
         }
 
         Prestador prestador = new Prestador();
@@ -115,6 +122,11 @@ public class PrestadorService {
             endereco.setLogradouro(dto.getEndereco().getLogradouro());
             endereco.setNumero(dto.getEndereco().getNumero());
             endereco.setComplemento(dto.getEndereco().getComplemento());
+            endereco.setLatitude(dto.getEndereco().getLatitude());
+            endereco.setLongitude(dto.getEndereco().getLongitude());
+            endereco.setBairro(dto.getEndereco().getBairro());
+            endereco.setCidade(dto.getEndereco().getCidade());
+            endereco.setEstado(dto.getEndereco().getEstado());
             prestador.setEndereco(endereco);
         }
 
@@ -170,6 +182,58 @@ public class PrestadorService {
         return toResponseDTO(prestador);
     }
 
+    @Transactional(readOnly = true)
+    public List<PrestadorProximoResponseDTO> listarProximos(
+            double lat, double lng, double raioKm) {
+        return prestadorRepository.findAll().stream()
+                .filter(p -> p.getEndereco() != null
+                        && p.getEndereco().getLatitude() != null
+                        && p.getEndereco().getLongitude() != null)
+                .map(p -> {
+                    double dist = calcularDistancia(
+                            lat, lng,
+                            p.getEndereco().getLatitude(),
+                            p.getEndereco().getLongitude());
+                    return toProximoDTO(p, dist);
+                })
+                .filter(dto -> dto.getDistanciaKm() <= raioKm)
+                .sorted(Comparator.comparingDouble(PrestadorProximoResponseDTO::getDistanciaKm))
+                .collect(Collectors.toList());
+    }
+
+    private double calcularDistancia(
+            double lat1, double lng1, double lat2, double lng2) {
+        final double R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    private PrestadorProximoResponseDTO toProximoDTO(Prestador p, double distanciaKm) {
+        EnderecoResponseDTO enderecoDTO = null;
+        if (p.getEndereco() != null) {
+            Endereco e = p.getEndereco();
+            enderecoDTO = new EnderecoResponseDTO(
+                    e.getId(), e.getCep(), e.getLogradouro(), e.getNumero(),
+                    e.getComplemento(), e.getBairro(), e.getCidade(), e.getEstado(),
+                    e.getLatitude(), e.getLongitude());
+        }
+        List<PrestadorFotoResponseDTO> fotosDTO = p.getFotos() != null
+                ? p.getFotos().stream()
+                    .map(f -> new PrestadorFotoResponseDTO(f.getId(), f.getUrl()))
+                    .collect(Collectors.toList())
+                : new ArrayList<>();
+        BigDecimal avaliacao = p.getAvaliacao() != null ? p.getAvaliacao() : BigDecimal.ZERO;
+        return new PrestadorProximoResponseDTO(
+                p.getId(), p.getNome(), p.getEmail(), p.getTelefone(),
+                p.getDescricao(), p.getEspecialidade(), avaliacao,
+                fotosDTO, enderecoDTO, Math.round(distanciaKm * 10.0) / 10.0);
+    }
+
     private PrestadorResponseDTO toResponseDTO(Prestador prestador) {
         EnderecoResponseDTO enderecoDTO = null;
 
@@ -183,7 +247,9 @@ public class PrestadorService {
                     e.getComplemento(),
                     e.getBairro(),
                     e.getCidade(),
-                    e.getEstado()
+                    e.getEstado(),
+                    e.getLatitude(),
+                    e.getLongitude()
             );
         }
 

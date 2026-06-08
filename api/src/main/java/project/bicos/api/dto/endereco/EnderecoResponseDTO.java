@@ -16,4 +16,6 @@ public class EnderecoResponseDTO {
     private String bairro;
     private String cidade;
     private String estado;
+    private Double latitude;
+    private Double longitude;
 }

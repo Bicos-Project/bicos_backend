@@ -19,4 +19,7 @@ public class AvaliacaoRequestDTO {
 
     @NotNull(message = "ID da solicitação é obrigatório")
     private Integer solicitacaoId;
+
+    @NotNull(message = "Tipo de avaliador é obrigatório")
+    private String avaliadorTipo;
 }

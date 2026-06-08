@@ -42,6 +42,11 @@ public class ClienteService {
             endereco.setLogradouro(dto.getEndereco().getLogradouro());
             endereco.setNumero(dto.getEndereco().getNumero());
             endereco.setComplemento(dto.getEndereco().getComplemento());
+            endereco.setLatitude(dto.getEndereco().getLatitude());
+            endereco.setLongitude(dto.getEndereco().getLongitude());
+            endereco.setBairro(dto.getEndereco().getBairro());
+            endereco.setCidade(dto.getEndereco().getCidade());
+            endereco.setEstado(dto.getEndereco().getEstado());
         }
 
         Cliente cliente = new Cliente();
@@ -98,6 +103,8 @@ public class ClienteService {
             endereco.setLogradouro(dto.getEndereco().getLogradouro());
             endereco.setNumero(dto.getEndereco().getNumero());
             endereco.setComplemento(dto.getEndereco().getComplemento());
+            endereco.setLatitude(dto.getEndereco().getLatitude());
+            endereco.setLongitude(dto.getEndereco().getLongitude());
             cliente.setEndereco(endereco);
         }
 
@@ -143,7 +150,9 @@ public class ClienteService {
                     e.getComplemento(),
                     e.getBairro(),
                     e.getCidade(),
-                    e.getEstado()
+                    e.getEstado(),
+                    e.getLatitude(),
+                    e.getLongitude()
             );
         }
 

@@ -20,6 +20,7 @@ public class SolicitacaoService {
     private final SolicitacaoRepository solicitacaoRepository;
     private final ClienteRepository clienteRepository;
     private final AnuncioRepository anuncioRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
 
     @Transactional
     public SolicitacaoResponseDTO criar(SolicitacaoRequestDTO dto) {
@@ -57,6 +58,8 @@ public class SolicitacaoService {
                         : LocalDate.now()
         );
         solicitacao.setStatus(StatusSolicitacao.orcamento);
+        solicitacao.setPrestadorConfirmouPagamento(false);
+        solicitacao.setClienteConfirmouPagamento(false);
         solicitacao.setCliente(cliente);
         solicitacao.setAnuncio(anuncio);
 
@@ -74,12 +77,58 @@ public class SolicitacaoService {
         StatusSolicitacao proximoStatus = switch (statusAtual) {
             case orcamento            -> StatusSolicitacao.em_andamento;
             case em_andamento         -> StatusSolicitacao.esperando_pagamento;
-            case esperando_pagamento  -> StatusSolicitacao.finalizado;
+            case esperando_pagamento  -> throw new RegraNegocioException(
+                    "Pagamento requer confirmação de ambas as partes. Use o endpoint de confirmação.");
             case finalizado           -> throw new RegraNegocioException(
                     "Esta solicitação já foi finalizada.");
+            case cancelado            -> throw new RegraNegocioException(
+                    "Esta solicitação foi cancelada.");
         };
 
         solicitacao.setStatus(proximoStatus);
+        return toResponseDTO(solicitacao);
+    }
+
+    @Transactional
+    public SolicitacaoResponseDTO confirmarPagamento(Integer id, String tipo) {
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException(
+                        "Solicitação não encontrada com ID: " + id));
+
+        if (solicitacao.getStatus() != StatusSolicitacao.esperando_pagamento) {
+            throw new RegraNegocioException(
+                    "Só é possível confirmar pagamento quando o status é 'esperando_pagamento'. " +
+                    "Status atual: " + solicitacao.getStatus().name());
+        }
+
+        if ("PRESTADOR".equals(tipo)) {
+            if (Boolean.TRUE.equals(solicitacao.getPrestadorConfirmouPagamento())) {
+                throw new RegraNegocioException("Prestador já confirmou o pagamento.");
+            }
+            solicitacao.setPrestadorConfirmouPagamento(true);
+        } else if ("CLIENTE".equals(tipo)) {
+            if (Boolean.TRUE.equals(solicitacao.getClienteConfirmouPagamento())) {
+                throw new RegraNegocioException("Cliente já confirmou o pagamento.");
+            }
+            solicitacao.setClienteConfirmouPagamento(true);
+        } else {
+            throw new RegraNegocioException("Tipo inválido. Use 'PRESTADOR' ou 'CLIENTE'.");
+        }
+
+        if (Boolean.TRUE.equals(solicitacao.getPrestadorConfirmouPagamento())
+                && Boolean.TRUE.equals(solicitacao.getClienteConfirmouPagamento())) {
+            solicitacao.setStatus(StatusSolicitacao.finalizado);
+        }
+
+        return toResponseDTO(solicitacao);
+    }
+
+    @Transactional
+    public SolicitacaoResponseDTO recusar(Integer id) {
+        Solicitacao solicitacao = solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException(
+                        "Solicitação não encontrada com ID: " + id));
+        solicitacao.setStatus(StatusSolicitacao.cancelado);
         return toResponseDTO(solicitacao);
     }
 
@@ -122,6 +171,10 @@ public class SolicitacaoService {
     }
 
     private SolicitacaoResponseDTO toResponseDTO(Solicitacao s) {
+        boolean clienteAvaliou = avaliacaoRepository
+                .existsBySolicitacaoIdAndAvaliadorTipo(s.getId(), "CLIENTE");
+        boolean prestadorAvaliou = avaliacaoRepository
+                .existsBySolicitacaoIdAndAvaliadorTipo(s.getId(), "PRESTADOR");
         return new SolicitacaoResponseDTO(
                 s.getId(),
                 s.getDescricao(),
@@ -132,7 +185,11 @@ public class SolicitacaoService {
                 s.getAnuncio().getId(),
                 s.getAnuncio().getTitulo(),
                 s.getAnuncio().getPrestador().getId(),
-                s.getAnuncio().getPrestador().getNome()
+                s.getAnuncio().getPrestador().getNome(),
+                s.getPrestadorConfirmouPagamento(),
+                s.getClienteConfirmouPagamento(),
+                clienteAvaliou,
+                prestadorAvaliou
         );
     }
 }

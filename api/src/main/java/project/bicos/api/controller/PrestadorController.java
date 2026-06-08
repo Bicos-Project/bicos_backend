@@ -1,6 +1,7 @@
 package project.bicos.api.controller;
 
 import project.bicos.api.dto.prestador.PrestadorCadastroRequestDTO;
+import project.bicos.api.dto.prestador.PrestadorProximoResponseDTO;
 import project.bicos.api.dto.prestador.PrestadorResponseDTO;
 import project.bicos.api.services.PrestadorService;
 import jakarta.validation.Valid;
@@ -78,6 +79,17 @@ public class PrestadorController {
             @PathVariable Integer fotoId) {
 
         PrestadorResponseDTO response = prestadorService.removerFoto(id, fotoId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/proximos")
+    public ResponseEntity<List<PrestadorProximoResponseDTO>> listarProximos(
+            @RequestParam Double lat,
+            @RequestParam Double lng,
+            @RequestParam(defaultValue = "50") double raioKm) {
+
+        List<PrestadorProximoResponseDTO> response =
+                prestadorService.listarProximos(lat, lng, raioKm);
         return ResponseEntity.ok(response);
     }
 }

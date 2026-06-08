@@ -11,9 +11,11 @@ import java.util.Optional;
 @Repository
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Integer> {
 
-    boolean existsBySolicitacaoId(Integer solicitacaoId);
+    boolean existsBySolicitacaoIdAndAvaliadorTipo(Integer solicitacaoId, String avaliadorTipo);
 
-    Optional<Avaliacao> findBySolicitacaoId(Integer solicitacaoId);
+    Optional<Avaliacao> findBySolicitacaoIdAndAvaliadorTipo(Integer solicitacaoId, String avaliadorTipo);
+
+    List<Avaliacao> findBySolicitacaoId(Integer solicitacaoId);
 
     @Query("SELECT a FROM Avaliacao a " +
             "WHERE a.solicitacao.anuncio.prestador.id = :prestadorId")
