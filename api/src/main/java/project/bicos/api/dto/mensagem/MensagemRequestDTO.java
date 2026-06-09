@@ -1,6 +1,5 @@
 package project.bicos.api.dto.mensagem;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -16,9 +15,8 @@ public class MensagemRequestDTO {
     @NotNull(message = "ID do remetente é obrigatório")
     private Integer remetenteId;
 
-    @NotBlank(message = "Tipo do remetente é obrigatório")
+    @NotNull(message = "Tipo do remetente é obrigatório")
     private String tipoRemetente;
 
-    @NotBlank(message = "Texto da mensagem é obrigatório")
     private String texto;
 }

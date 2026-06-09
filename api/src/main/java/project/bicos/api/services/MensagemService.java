@@ -7,6 +7,7 @@ import project.bicos.api.repository.MensagemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,15 +17,27 @@ import java.util.stream.Collectors;
 public class MensagemService {
 
     private final MensagemRepository mensagemRepository;
+    private final StorageService storageService;
 
     @Transactional
     public MensagemResponseDTO enviar(MensagemRequestDTO dto) {
+        return enviarComFoto(dto, null);
+    }
+
+    @Transactional
+    public MensagemResponseDTO enviarComFoto(MensagemRequestDTO dto, MultipartFile file) {
         Mensagem mensagem = new Mensagem();
         mensagem.setSolicitacaoId(dto.getSolicitacaoId());
         mensagem.setRemetenteId(dto.getRemetenteId());
         mensagem.setTipoRemetente(dto.getTipoRemetente());
         mensagem.setTexto(dto.getTexto());
         mensagem.setDataHora(LocalDateTime.now());
+
+        if (file != null && !file.isEmpty()) {
+            String url = storageService.salvar(file);
+            mensagem.setImagemUrl(url);
+        }
+
         return toResponseDTO(mensagemRepository.save(mensagem));
     }
 
@@ -43,7 +56,8 @@ public class MensagemService {
                 m.getRemetenteId(),
                 m.getTipoRemetente(),
                 m.getTexto(),
-                m.getDataHora()
+                m.getDataHora(),
+                m.getImagemUrl()
         );
     }
 }

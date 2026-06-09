@@ -45,6 +45,13 @@ public class AvaliacaoController {
                 avaliacaoService.listarPorPrestador(prestadorId));
     }
 
+    @GetMapping(params = "clienteId")
+    public ResponseEntity<List<AvaliacaoResponseDTO>> listarPorCliente(
+            @RequestParam Integer clienteId) {
+        return ResponseEntity.ok(
+                avaliacaoService.listarPorCliente(clienteId));
+    }
+
     @GetMapping("/media")
     public ResponseEntity<MediaAvaliacaoResponseDTO> calcularMedia(
             @RequestParam Integer prestadorId) {

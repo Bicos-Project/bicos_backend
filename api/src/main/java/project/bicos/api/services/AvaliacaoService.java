@@ -106,6 +106,14 @@ public class AvaliacaoService {
     }
 
     @Transactional(readOnly = true)
+    public List<AvaliacaoResponseDTO> listarPorCliente(Integer clienteId) {
+        return avaliacaoRepository.findByClienteId(clienteId)
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public MediaAvaliacaoResponseDTO calcularMedia(Integer prestadorId) {
 
         var prestador = prestadorRepository.findById(prestadorId)

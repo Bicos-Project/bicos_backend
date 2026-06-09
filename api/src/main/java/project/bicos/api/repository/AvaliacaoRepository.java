@@ -18,11 +18,18 @@ public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Integer> {
     List<Avaliacao> findBySolicitacaoId(Integer solicitacaoId);
 
     @Query("SELECT a FROM Avaliacao a " +
-            "WHERE a.solicitacao.prestador.id = :prestadorId")
+            "WHERE a.solicitacao.prestador.id = :prestadorId " +
+            "AND a.avaliadorTipo = 'CLIENTE'")
     List<Avaliacao> findByPrestadorId(@Param("prestadorId") Integer prestadorId);
 
+    @Query("SELECT a FROM Avaliacao a " +
+            "WHERE a.solicitacao.cliente.id = :clienteId " +
+            "AND a.avaliadorTipo = 'PRESTADOR'")
+    List<Avaliacao> findByClienteId(@Param("clienteId") Integer clienteId);
+
     @Query("SELECT AVG(a.nota) FROM Avaliacao a " +
-            "WHERE a.solicitacao.prestador.id = :prestadorId")
+            "WHERE a.solicitacao.prestador.id = :prestadorId " +
+            "AND a.avaliadorTipo = 'CLIENTE'")
     Double calcularMediaPorPrestador(@Param("prestadorId") Integer prestadorId);
 
     @Query("SELECT AVG(a.nota) FROM Avaliacao a " +

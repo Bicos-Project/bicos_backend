@@ -15,4 +15,5 @@ public class MensagemResponseDTO {
     private String tipoRemetente;
     private String texto;
     private LocalDateTime dataHora;
+    private String imagemUrl;
 }

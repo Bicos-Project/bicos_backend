@@ -36,4 +36,7 @@ public class Mensagem {
 
     @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
+
+    @Column(name = "imagem_url")
+    private String imagemUrl;
 }

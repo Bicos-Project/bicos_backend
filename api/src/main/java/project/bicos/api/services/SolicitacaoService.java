@@ -8,10 +8,10 @@ import project.bicos.api.models.enums.StatusSolicitacao;
 import project.bicos.api.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,10 +35,10 @@ public class SolicitacaoService {
                         "Prestador não encontrado com ID: " + dto.getPrestadorId()));
 
         boolean temSolicitacaoAberta = solicitacaoRepository
-                .existsByClienteIdAndPrestadorIdAndStatusNot(
+                .existsByClienteIdAndPrestadorIdAndStatusNotIn(
                         dto.getClienteId(),
                         dto.getPrestadorId(),
-                        StatusSolicitacao.finalizado
+                        List.of(StatusSolicitacao.finalizado, StatusSolicitacao.cancelado)
                 );
 
         if (temSolicitacaoAberta) {
@@ -173,6 +173,13 @@ public class SolicitacaoService {
                 ? s.getPrestador().getCategoria().getNome()
                 : null;
 
+        String clienteFotoUrl = s.getCliente().getFotoUrl();
+
+        String prestadorFotoUrl = s.getPrestador().getFotos() != null
+                && !s.getPrestador().getFotos().isEmpty()
+                ? s.getPrestador().getFotos().get(0).getUrl()
+                : null;
+
         return new SolicitacaoResponseDTO(
                 s.getId(),
                 s.getDescricao(),
@@ -191,7 +198,9 @@ public class SolicitacaoService {
                 s.getPrestadorConfirmouPagamento(),
                 s.getClienteConfirmouPagamento(),
                 clienteAvaliou,
-                prestadorAvaliou
+                prestadorAvaliou,
+                clienteFotoUrl,
+                prestadorFotoUrl
         );
     }
 }

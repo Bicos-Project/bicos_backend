@@ -29,4 +29,6 @@ public class SolicitacaoResponseDTO {
 
     private Boolean clienteAvaliou;
     private Boolean prestadorAvaliou;
+    private String clienteFotoUrl;
+    private String prestadorFotoUrl;
 }

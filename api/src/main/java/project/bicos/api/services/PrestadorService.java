@@ -256,7 +256,7 @@ public class PrestadorService {
                 fotosDTO, enderecoDTO, Math.round(distanciaKm * 10.0) / 10.0);
     }
 
-    private PrestadorResponseDTO toResponseDTO(Prestador prestador) {
+    public PrestadorResponseDTO toResponseDTO(Prestador prestador) {
         EnderecoResponseDTO enderecoDTO = null;
 
         if (prestador.getEndereco() != null) {
