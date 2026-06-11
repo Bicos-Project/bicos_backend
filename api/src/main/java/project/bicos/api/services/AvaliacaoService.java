@@ -56,7 +56,6 @@ public class AvaliacaoService {
 
         Avaliacao saved = avaliacaoRepository.save(avaliacao);
 
-        // Recalcular e atualizar a média do prestador
         Prestador prestador = solicitacao.getPrestador();
         Double media = avaliacaoRepository
                 .calcularMediaPorPrestador(prestador.getId());
@@ -66,7 +65,6 @@ public class AvaliacaoService {
                 : java.math.BigDecimal.ZERO);
         prestadorRepository.save(prestador);
 
-        // Recalcular e atualizar a média do cliente (quando avaliado por prestador)
         if ("PRESTADOR".equals(dto.getAvaliadorTipo())) {
             Cliente cliente = solicitacao.getCliente();
             Double mediaCliente = avaliacaoRepository

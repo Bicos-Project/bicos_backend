@@ -113,9 +113,10 @@ public class PrestadorService {
         Prestador prestador = prestadorRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Prestador não encontrado com ID: " + id));
 
-        prestadorRepository.findByEmail(dto.getEmail())
-                .filter(p -> !p.getId().equals(id))
-                .ifPresent(p -> { throw new RegraNegocioException("E-mail já em uso por outro prestador."); });
+        var emailExistente = prestadorRepository.findByEmail(dto.getEmail());
+        if (emailExistente.isPresent() && !emailExistente.get().getId().equals(id)) {
+            throw new RegraNegocioException("E-mail já em uso por outro prestador.");
+        }
 
         prestador.setNome(dto.getNome());
         prestador.setEmail(dto.getEmail());

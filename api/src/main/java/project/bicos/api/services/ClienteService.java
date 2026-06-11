@@ -83,13 +83,15 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado com ID: " + id));
 
-        clienteRepository.findByEmail(dto.getEmail())
-                .filter(c -> !c.getId().equals(id))
-                .ifPresent(c -> { throw new RegraNegocioException("E-mail já em uso por outro cliente."); });
+        var emailExistente = clienteRepository.findByEmail(dto.getEmail());
+        if (emailExistente.isPresent() && !emailExistente.get().getId().equals(id)) {
+            throw new RegraNegocioException("E-mail já em uso por outro cliente.");
+        }
 
-        clienteRepository.findByCpf(dto.getCpf())
-                .filter(c -> !c.getId().equals(id))
-                .ifPresent(c -> { throw new RegraNegocioException("CPF já em uso por outro cliente."); });
+        var cpfExistente = clienteRepository.findByCpf(dto.getCpf());
+        if (cpfExistente.isPresent() && !cpfExistente.get().getId().equals(id)) {
+            throw new RegraNegocioException("CPF já em uso por outro cliente.");
+        }
 
         cliente.setNome(dto.getNome());
         cliente.setEmail(dto.getEmail());
